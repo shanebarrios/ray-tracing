@@ -3,9 +3,13 @@
 
 #include <stdbool.h>
 #include <math.h>
+#include <stdlib.h>
 #include <stdint.h>
 
-#define MIN(a, b) ((a < b) ? a : b)
-#define MAX(a, b) ((a > b) ? a : b)
+#define PIXEL_WIDTH 1920
+#define PIXEL_HEIGHT 1080
+#define EPSILON 1e-6f
+
+typedef float vec3_t[3];
 
 #endif
