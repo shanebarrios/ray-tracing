@@ -10,6 +10,9 @@
 #define PIXEL_HEIGHT 1080
 #define EPSILON 1e-6f
 
-typedef float vec3_t[3];
+#define unlikely(x) __builtin_expect(!!(x), 0)
+#define likely(x) __builtin_expect(!!(x), 1)
+
+typedef float vec3_t[4];
 
 #endif

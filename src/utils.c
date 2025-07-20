@@ -30,7 +30,6 @@ typedef struct
     uint32_t num_important_colors;
 } dib_header_t;
 
-
 #pragma pack(pop)
 
 bool write_pixels_to_bmp(const vec3_t* pixels, size_t width, size_t height, const char* path)

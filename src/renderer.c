@@ -3,11 +3,22 @@
 #include <float.h>
 #include "scene.h"
 #include "ray.h"
+#include "material.h"
 
 #define MAX_RAY_BOUNCES 10
+#define NUM_SAMPLES 4
+#define GAMMA_EXPONENT 2.2f
+#define INV_GAMMA_EXPONENT 1.0f / 2.2f
 
 static const vec3_t WHITE_COLOR = {1.0f, 1.0f, 1.0f};
 static const vec3_t FILL_COLOR = {0.5f, 0.7f, 1.0f};
+
+static inline void linear_to_gamma(vec3_t color)
+{
+    color[0] = powf(color[0], INV_GAMMA_EXPONENT);
+    color[1] = powf(color[1], INV_GAMMA_EXPONENT);
+    color[2] = powf(color[2], INV_GAMMA_EXPONENT);
+}
 
 static void render_pixel(const struct scene* scene, const ray_t* ray, vec3_t pixel, int bounces)
 {
@@ -18,21 +29,19 @@ static void render_pixel(const struct scene* scene, const ray_t* ray, vec3_t pix
     }
 
     ray_hit_t hit;
-    if (ray_intersect_scene(ray, scene, &hit))
+    if (ray_intersect_scene(ray, scene, 0.001, INFINITY, &hit))
     {
         ray_t bounce_ray;
-        // Offset slightly so it doesn't hit the same object again
-        vec3_t epsilon_vec;
-        vec3_copy(hit.normal, epsilon_vec);
-        vec3_mult(epsilon_vec, 0.001f, epsilon_vec);
-
-        vec3_copy(hit.position, bounce_ray.begin);
-        vec3_add(bounce_ray.begin, epsilon_vec, bounce_ray.begin);
-        vec3_random_unit(bounce_ray.dir);
-        vec3_add(hit.normal, bounce_ray.dir, bounce_ray.dir);
-        vec3_normalize(bounce_ray.dir, bounce_ray.dir);
-        render_pixel(scene, &bounce_ray, pixel, bounces+1);
-        vec3_mult(pixel, 0.5f, pixel);
+        vec3_t attenuation;
+        if (hit.material->scatter(ray, &hit, &bounce_ray, attenuation))
+        {
+            render_pixel(scene, &bounce_ray, pixel, bounces+1);
+            vec3_element_mult(pixel, attenuation, pixel);       
+        }
+        else
+        {
+            vec3_zero(pixel);
+        }
     }
     else
     {
@@ -63,21 +72,32 @@ void render(const struct scene* scene, vec3_t* pixels, size_t width, size_t heig
 
     for (size_t j = 0; j < height; j++)
     {
-        const float ndc_y = (j + 0.5f) / height * 2.0f - 1.0f;
-        const float world_y = ndc_y * half_viewport_height;
-        vec3_mult(cam->up, world_y, up);
         for (size_t i = 0; i < width; i++)
         {
-            const float ndc_x = (i + 0.5f) / width * 2.0f - 1.0f;
-            const float world_x = ndc_x * half_viewport_width;
-            vec3_mult(cam->right, world_x, right);
-        
-            vec3_add(forward, up, dir);
-            vec3_add(dir, right, dir);
-            vec3_normalize(dir, dir);
-            vec3_copy(dir, ray.dir);
+            vec3_t* pixel = &pixels[j * width + i];
+            vec3_zero(*pixel);
 
-            render_pixel(scene, &ray, pixels[j * width + i], 0);
+            for (size_t sample = 0; sample < NUM_SAMPLES; sample++)
+            {
+                const float ndc_x = (i + RAND_UNIT_FLOAT()) / width * 2.0f - 1.0f;
+                const float world_x = ndc_x * half_viewport_width;
+                const float ndc_y = (j + RAND_UNIT_FLOAT()) / height * 2.0f - 1.0f;
+                const float world_y = ndc_y * half_viewport_height;
+                vec3_mult(cam->up, world_y, up);
+            
+                vec3_mult(cam->right, world_x, right);
+        
+                vec3_add(forward, up, dir);
+                vec3_add(dir, right, dir);
+                vec3_normalize(dir, dir);
+                vec3_copy(dir, ray.dir);
+
+                vec3_t sample_color;
+                render_pixel(scene, &ray, sample_color, 0);
+                vec3_add(*pixel, sample_color, *pixel);
+            }
+            vec3_div(*pixel, NUM_SAMPLES, *pixel);
+            linear_to_gamma(*pixel);
         }
     }
 }

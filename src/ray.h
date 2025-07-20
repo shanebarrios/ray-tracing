@@ -4,6 +4,9 @@
 #include "vec.h"
 #include "scene.h"
 
+struct material;
+typedef struct material material_t;
+
 typedef struct ray
 {
     vec3_t begin;
@@ -12,14 +15,12 @@ typedef struct ray
 
 typedef struct ray_hit
 {
-    float t;
     vec3_t position;
     vec3_t normal;
+    const material_t* material;
+    float t;
+    bool front_face;
 } ray_hit_t;
-
-bool ray_intersect_scene(const ray_t* self, const scene_t* scene, ray_hit_t* out);
-
-bool ray_intersect_sphere(const ray_t* self, const sphere_t* sphere, ray_hit_t* out);
 
 static inline void ray_hit_copy(const ray_hit_t* src, ray_hit_t* dst)
 {

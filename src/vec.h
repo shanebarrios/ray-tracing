@@ -18,6 +18,11 @@ static inline void vec3_zero(vec3_t v)
     memset(v, 0, sizeof(vec3_t));
 }
 
+static inline void vec3_copy(const vec3_t src, vec3_t dst)
+{
+    memcpy(dst, src, sizeof(vec3_t));
+}
+
 static inline void vec3_negate(const vec3_t v, vec3_t out)
 {
     out[0] = -v[0];
@@ -90,6 +95,28 @@ static inline void vec3_normalize(const vec3_t v, vec3_t out)
     out[2] = v[2] / norm;
 }
 
+static inline void vec3_reflect(const vec3_t v, const vec3_t n, vec3_t out)
+{
+    const float k = -2 * vec3_dot(v, n);
+    vec3_mult(n, k, out);
+    vec3_add(out, v, out);
+}
+
+static inline void vec3_refract(const vec3_t incident, const vec3_t normal, float eta, vec3_t out)
+{
+    const float cos_theta = -vec3_dot(normal, incident);
+
+    vec3_t tangential;
+    vec3_mult(normal, cos_theta, tangential);
+    vec3_add(tangential, incident, tangential);
+    vec3_mult(tangential, eta, tangential);
+
+    vec3_t parallel;
+    const float k = sqrtf(1.0f - eta * eta * (1.0f - cos_theta * cos_theta));
+    vec3_mult(normal, -k, parallel);
+    vec3_add(tangential, parallel, out);
+}
+
 static inline void vec3_random_unit(vec3_t out)
 {
     while (true)
@@ -114,9 +141,12 @@ static inline void vec3_random_on_unit_hemisphere(const vec3_t normal, vec3_t ou
     }
 }
 
-static inline void vec3_copy(const vec3_t src, vec3_t dst)
+static inline bool vec3_is_near_zero(const vec3_t v)
 {
-    memcpy(dst, src, sizeof(vec3_t));
+    return 
+        fabsf(v[0]) < EPSILON && 
+        fabsf(v[1]) < EPSILON &&
+        fabsf(v[2]) < EPSILON;
 }
 
 static inline void vec3_print(vec3_t v)
