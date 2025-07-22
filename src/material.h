@@ -13,6 +13,7 @@ enum material_type
     MATERIAL_LAMBERTIAN,
     MATERIAL_METAL,
     MATERIAL_DIELECTRIC,
+    MATERIAL_POINT_LIGHT,
     MATERIAL_TYPE_COUNT
 };
 
@@ -32,6 +33,11 @@ struct dielectric
     float refraction_index;
 };
 
+struct point_light
+{
+    vec3_t color;
+};
+
 typedef struct material
 {
     union 
@@ -39,6 +45,7 @@ typedef struct material
         struct lambertian lambertian;
         struct metal metal;
         struct dielectric dielectric;
+        struct point_light point_light;
     } underlying;
     enum material_type type;
     int ref_count;
@@ -50,10 +57,14 @@ material_t* material_metal_new(const vec3_t albedo, float fuzz);
 
 material_t* material_dielectric_new(float refraction_index);
 
+material_t* material_point_light_new(const vec3_t color);
+
 void material_release(material_t* self);
 
 material_t* material_acquire(material_t* other);
 
 bool material_scatter(const material_t* self, const ray_t* ray, const ray_hit_t* hit, ray_t* out_ray, vec3_t out_attenutation);
+
+bool material_emit(const material_t* self, vec3_t out_color);
 
 #endif

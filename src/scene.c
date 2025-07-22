@@ -61,7 +61,7 @@ static bool sphere_intersect_scene_object(const sphere_t* sphere, const scene_ob
 {
     switch (object->type)
     {
-        case SPHERE_OBJECT:
+        case OBJECT_SPHERE:
             return sphere_intersect_sphere(sphere, &object->underlying.sphere);
     }
 }
@@ -82,7 +82,7 @@ static bool try_place_random_sphere_on_sphere(scene_t* self, const sphere_t* sur
 {
     const float radius = rand_float_in_range(0.5f, 4.0f);
     const float offset = surface->radius + radius;
-    const float phi = acosf(rand_float_in_range(0.98f, 1.0f));
+    const float phi = acosf(rand_float_in_range(0.998f, 1.0f));
     const float theta = rand_float_in_range(0.0f, 2.0f * PI);
     const float x = offset * sinf(phi) * cosf(theta);
     const float z = offset * sinf(phi) * sinf(theta);
@@ -110,6 +110,9 @@ static bool try_place_random_sphere_on_sphere(scene_t* self, const sphere_t* sur
         case MATERIAL_DIELECTRIC:
             mat = material_dielectric_new(rand_float_in_range(1.0f, 2.0f));
             break;
+        case MATERIAL_POINT_LIGHT:
+            mat = material_point_light_new((vec3_t){sqrtf(rand_unit_float()), sqrtf(rand_unit_float()), sqrtf(rand_unit_float())});
+            break;
         default:
             mat = NULL;
             assert(false);
@@ -118,10 +121,10 @@ static bool try_place_random_sphere_on_sphere(scene_t* self, const sphere_t* sur
     return true;
 }
 
-void sphere_init(scene_object_t* self, material_t* material, const vec3_t center, float radius)
+void scene_object_sphere_init(scene_object_t* self, material_t* material, const vec3_t center, float radius)
 {
     sphere_t* sphere = &self->underlying.sphere;
-    self->type = SPHERE_OBJECT;
+    self->type = OBJECT_SPHERE;
     self->material = material;
     vec3_copy(center, sphere->center);
     sphere->radius = radius;
@@ -160,11 +163,11 @@ void scene_random_init(scene_t* self)
     // Place camera at phi = 0
     vec3_t camera_pos;
     vec3_copy(ground_sphere_center, camera_pos);
-    camera_pos[1] += ground_sphere_radius + 5.0f;
+    camera_pos[1] += ground_sphere_radius + 10.0f;
     camera_init(&self->camera, camera_pos, TO_RADS(45.0f), 20.0f, 100.0f, (float) PIXEL_WIDTH / PIXEL_HEIGHT, TO_RADS(0.0f));
-    //camera_set_forward(&self->camera, (vec3_t){0.0f, -0.3f, -1.0f});
+    camera_set_forward(&self->camera, (vec3_t){0.0f, -0.2f, -1.0f});
 
-    for (int i = 0; i < 1000; i++)
+    for (int i = 0; i < 100; i++)
     {
         while (!try_place_random_sphere_on_sphere(self, &ground->underlying.sphere));
     }
@@ -187,7 +190,7 @@ const scene_object_t* scene_add_sphere(scene_t* self, material_t* material, cons
 {
     assert(self->num_objects < MAX_OBJECTS);
     scene_object_t* object = &self->objects[self->num_objects];
-    sphere_init(object, material, center, radius);
+    scene_object_sphere_init(object, material, center, radius);
     self->num_objects++;
     return object;
 }
@@ -196,7 +199,7 @@ bool ray_intersect_scene_object(const ray_t* ray, const scene_object_t* object, 
 {
     switch (object->type)
     {
-        case SPHERE_OBJECT:
+        case OBJECT_SPHERE:
             return sphere_intersect_ray(object, ray, tmin, tmax, out);
     }
 }
@@ -219,4 +222,9 @@ bool ray_intersect_scene(const ray_t* ray, const scene_t* scene, float tmin, flo
         }
     }
     return success;
+}
+
+bool ray_intersect_aabb(const ray_t* ray, const aabb_t* aabb)
+{
+
 }

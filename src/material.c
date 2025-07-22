@@ -58,6 +58,12 @@ static bool material_dielectric_scatter(const ray_t* ray, const ray_hit_t* hit, 
     return true;
 }
 
+static bool material_point_light_emit(const material_t* material, vec3_t out_color)
+{
+    vec3_copy(material->underlying.point_light.color, out_color);
+    return true;
+}
+
 material_t* material_lambertian_new(const vec3_t albedo)
 {
     material_t* ret = (material_t*) malloc(sizeof(material_t));
@@ -86,6 +92,16 @@ material_t* material_dielectric_new(float refraction_index)
     return ret;
 }
 
+material_t* material_point_light_new(const vec3_t color)
+{
+    material_t* ret = malloc(sizeof(material_t));
+    ret->type = MATERIAL_POINT_LIGHT;
+    ret->ref_count = 1;
+    struct point_light* point_light = &ret->underlying.point_light;
+    vec3_copy(color, point_light->color);
+    return ret;
+}
+
 void material_release(material_t* mat)
 {
     if (--mat->ref_count == 0)
@@ -110,8 +126,22 @@ bool material_scatter(const material_t* self, const ray_t* ray, const ray_hit_t*
             return material_metal_scatter(ray, hit, out_ray, out_attenuation);
         case MATERIAL_DIELECTRIC:
             return material_dielectric_scatter(ray, hit, out_ray, out_attenuation);
+        case MATERIAL_POINT_LIGHT:
+            return false;
         default:
             assert(false);
+            return false;
+    }
+}
+
+bool material_emit(const material_t* self, vec3_t out_color)
+{
+    switch (self->type)
+    {
+        case MATERIAL_POINT_LIGHT:
+            return material_point_light_emit(self, out_color);
+        default:
+            vec3_zero(out_color);
             return false;
     }
 }

@@ -7,7 +7,7 @@
 #include "material.h"
 
 #define MAX_RAY_BOUNCES 10
-#define NUM_SAMPLES 4
+#define NUM_SAMPLES 400
 #define GAMMA_EXPONENT 2.2f
 #define INV_GAMMA_EXPONENT (1.0f / 2.2f)
 #define NUM_THREADS 8
@@ -35,27 +35,31 @@ static void render_pixel(const struct scene* scene, const ray_t* ray, vec3_t pix
     {
         ray_t bounce_ray;
         vec3_t attenuation;
+        vec3_t emission;
+        material_emit(hit.material, emission);
         if (material_scatter(hit.material, ray, &hit, &bounce_ray, attenuation))
         {
             render_pixel(scene, &bounce_ray, pixel, bounces+1);
             vec3_element_mult(pixel, attenuation, pixel);
+            vec3_add(pixel, emission, pixel);
         }
         else
         {
-            vec3_zero(pixel);
+            vec3_copy(emission, pixel);
         }
     }
     else
     {
-        float a = (ray->dir[1] + 1.0f) / 2.0f;
+        // float a = (ray->dir[1] + 1.0f) / 2.0f;
 
-        vec3_copy(FILL_COLOR, pixel);
-        vec3_mult(pixel, a, pixel);
+        // vec3_copy(FILL_COLOR, pixel);
+        // vec3_mult(pixel, a, pixel);
 
-        vec3_t scratch;
-        vec3_mult(WHITE_COLOR, 1.0f - a, scratch);
+        // vec3_t scratch;
+        // vec3_mult(WHITE_COLOR, 1.0f - a, scratch);
 
-        vec3_add(pixel, scratch, pixel);
+        // vec3_add(pixel, scratch, pixel);
+        vec3_zero(pixel);
     }
 }
 
