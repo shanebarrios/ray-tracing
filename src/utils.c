@@ -7,15 +7,15 @@
 
 #pragma pack(push, 1)
 
-typedef struct
+struct bitmap_header
 {
     char header_field[2];
     uint32_t file_size;
     uint32_t reserved;
     uint32_t image_offset;
-} bitmap_header_t;
+};
 
-typedef struct
+struct dib_header
 {
     uint32_t header_size;
     uint32_t bitmap_width;
@@ -28,7 +28,7 @@ typedef struct
     uint32_t vertical_resolution;
     uint32_t num_colors;
     uint32_t num_important_colors;
-} dib_header_t;
+};
 
 #pragma pack(pop)
 
@@ -41,7 +41,7 @@ bool write_pixels_to_bmp(const vec3_t* pixels, size_t width, size_t height, cons
     const uint32_t row_size = width * 3 + byte_padding;
     const uint32_t pixels_size = row_size * height;
 
-    bitmap_header_t bitmap_header = 
+    const struct bitmap_header bitmap_header =
     {
         .header_field = {'B', 'M'},
         .file_size = 14 + 40 + pixels_size,
@@ -49,7 +49,7 @@ bool write_pixels_to_bmp(const vec3_t* pixels, size_t width, size_t height, cons
         .image_offset = 14 + 40 
     };
 
-    dib_header_t dib_header =
+    const struct dib_header dib_header =
     {
         .header_size = 40,
         .bitmap_width = width,
@@ -85,8 +85,8 @@ bool write_pixels_to_bmp(const vec3_t* pixels, size_t width, size_t height, cons
         buf_index += byte_padding;
     }
 
-    fwrite(&bitmap_header, sizeof(bitmap_header_t), 1, file);
-    fwrite(&dib_header, sizeof(dib_header_t), 1, file);
+    fwrite(&bitmap_header, sizeof(struct bitmap_header), 1, file);
+    fwrite(&dib_header, sizeof(struct dib_header), 1, file);
     fwrite(buf, pixels_size, 1, file);
 
     free(buf);

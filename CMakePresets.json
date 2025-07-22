@@ -1,0 +1,31 @@
+{
+    "version": 8,
+    "configurePresets": [
+        {
+            "name": "default",
+            "displayName": "Default",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "generator": "Ninja Multi-Config",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "Debug",
+            "configurePreset": "default",
+            "configuration": "Debug"
+        },
+        {
+            "name": "RelWithDebInfo",
+            "configurePreset": "default",
+            "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "Release",
+            "configurePreset": "default",
+            "configuration": "Release"
+        }
+    ]
+}

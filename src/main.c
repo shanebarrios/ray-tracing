@@ -2,23 +2,24 @@
 #include <time.h>
 #include "common.h"
 #include "vec.h"
-#include "ray.h"
 #include "utils.h"
 #include "scene.h"
 #include "renderer.h"
 
-int main(int argc, char** argv)
+int main()
 {
+    srand(time(NULL));
     scene_t scene;
-    scene_default_init(&scene);
-    vec3_t* pixels = (vec3_t*) malloc(PIXEL_WIDTH * PIXEL_HEIGHT * sizeof(vec3_t));
+    scene_random_init(&scene);
+    vec3_t* pixels = malloc(PIXEL_WIDTH * PIXEL_HEIGHT * sizeof(vec3_t));
     
-    clock_t begin, end;
-    begin = clock();
+    struct timespec begin, end;
+    clock_gettime(CLOCK_MONOTONIC, &begin);
     render(&scene, pixels, PIXEL_WIDTH, PIXEL_HEIGHT);
-    end = clock();
+    clock_gettime(CLOCK_MONOTONIC, &end);
 
-    float elapsed = (double)(end - begin) / CLOCKS_PER_SEC;
+    const double elapsed = (double)(end.tv_sec - begin.tv_sec) +   
+        (double)(end.tv_nsec - begin.tv_nsec) / 1e9;
     printf("Rendered after %f seconds\n", elapsed);
 
     int success = 0;
