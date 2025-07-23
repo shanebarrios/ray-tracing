@@ -75,6 +75,8 @@ struct render_task_args
 
 static void* render_task(void* _args)
 {
+    uint64_t tid = (uint64_t) pthread_self();
+    pcg32_srandom(800, tid);
     struct render_task_args* args = (struct render_task_args*) _args;
     const camera_t* cam = &args->scene->camera;
 
@@ -111,7 +113,6 @@ static void* render_task(void* _args)
             linear_to_gamma(pixel);
         }
     }
-
     return NULL;
 }
 

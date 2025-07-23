@@ -1,26 +1,37 @@
 #include <stdlib.h>
 #include <time.h>
 #include "common.h"
+#include "pcg_basic.h"
 #include "vec.h"
 #include "utils.h"
 #include "scene.h"
 #include "renderer.h"
 
+#define TIME(fmt, ...) \
+clock_gettime(CLOCK_MONOTONIC, &begin); \
+do __VA_ARGS__ while(0); \
+clock_gettime(CLOCK_MONOTONIC, &end); \
+elapsed = (double)(end.tv_sec - begin.tv_sec) + (double)(end.tv_nsec - begin.tv_nsec) / 1e9; \
+printf(fmt, elapsed) \
+
+
 int main()
 {
-    srand(time(NULL));
+    struct timespec begin, end;
+    double elapsed;
+    pcg32_srandom(80, time(NULL));
+    //srand(time(NULL));
+
     scene_t scene;
-    scene_random_init(&scene);
+    TIME("Scene initialized in %f seconds\n", {
+        scene_random_init(&scene);
+    });
+
     vec3_t* pixels = malloc(PIXEL_WIDTH * PIXEL_HEIGHT * sizeof(vec3_t));
     
-    struct timespec begin, end;
-    clock_gettime(CLOCK_MONOTONIC, &begin);
-    render(&scene, pixels, PIXEL_WIDTH, PIXEL_HEIGHT);
-    clock_gettime(CLOCK_MONOTONIC, &end);
-
-    const double elapsed = (double)(end.tv_sec - begin.tv_sec) +   
-        (double)(end.tv_nsec - begin.tv_nsec) / 1e9;
-    printf("Rendered after %f seconds\n", elapsed);
+    TIME("Scene rendered in %f seconds\n", {
+        render(&scene, pixels, PIXEL_WIDTH, PIXEL_HEIGHT);
+    });
 
     int success = 0;
     if (!write_pixels_to_bmp(pixels, PIXEL_WIDTH, PIXEL_HEIGHT, "img.bmp"))
@@ -33,3 +44,5 @@ int main()
 
     return success;
 }
+
+#undef TIME

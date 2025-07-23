@@ -2,37 +2,47 @@
 #define UTILS_H
 
 #include "common.h"
+#include "pcg_basic.h"
+#include <math.h>
 
 #define PI 3.14159265f
 
-#define MIN(a, b) (((a) < (b)) ? (a) : (b))
-
-#define MAX(a, b) (((a) > (b)) ? (a) : (b))
-
-#define CLAMP(val, lower, upper) (MIN((upper), MAX((val), (lower))))
+#define CLAMP(val, lower, upper) (fminf((upper), fmaxf((val), (lower))))
 
 #define TO_RADS(degrees) ((degrees) * PI / 180.0f)
 
 #define TO_DEGREES(radians) ((radians) * 180.0f / PI)
 
+enum axis
+{
+    AXIS_X = 0,
+    AXIS_Y,
+    AXIS_Z 
+};
+
+inline bool interval_overlaps(float u1, float u2, float v1, float v2)
+{
+    return fmaxf(u1, v1) <= fminf(u2, v2);
+}
+
 inline float rand_unit_float()
 {
-    return (float) rand() / (float) RAND_MAX;
+    return (float) pcg32_random() / (float) UINT32_MAX;
 }
 
 inline float rand_unit_float_signed()
 {
-    return (float) rand() / (float) RAND_MAX * 2.0f - 1.0f;
+    return (float) pcg32_random() / (float) UINT32_MAX * 2.0f - 1.0f;
 }
 
 inline float rand_float_in_range(float lower, float upper)
 {
-    return (float) rand() / (float) RAND_MAX * (upper - lower) + lower;
+    return (float) pcg32_random() / (float) UINT32_MAX * (upper - lower) + lower;
 }
 
 inline int rand_int_in_range(int lower, int upper)
 {
-    return lower + rand() % (upper - lower + 1);
+    return lower + pcg32_random() % (upper - lower + 1);
 }
 
 bool write_pixels_to_bmp(const vec3_t* pixels, size_t width, size_t height, const char* path);

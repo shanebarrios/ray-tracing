@@ -5,12 +5,20 @@
 #include "utils.h"
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 inline void vec3_set(vec3_t v, float x, float y, float z)
 {
     v[0] = x;
     v[1] = y;
     v[2] = z;
+}
+
+inline void vec3_fill(vec3_t v, float x)
+{
+    v[0] = x;
+    v[1] = x;
+    v[2] = x;
 }
 
 inline void vec3_zero(vec3_t v)
@@ -65,6 +73,13 @@ inline void vec3_element_mult(const vec3_t v1, const vec3_t v2, vec3_t out)
     out[2] = v1[2] * v2[2];
 }
 
+inline void vec3_element_div(const vec3_t v1, const vec3_t v2, vec3_t out)
+{
+    out[0] = v1[0] / v2[0];
+    out[1] = v1[1] / v2[1];
+    out[2] = v1[2] / v2[2];
+}
+
 inline float vec3_dot(const vec3_t v1, const vec3_t v2)
 {
     return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
@@ -107,6 +122,27 @@ inline void vec3_sqrt(const vec3_t v, vec3_t out)
     out[0] = sqrtf(v[0]);
     out[1] = sqrtf(v[1]);
     out[2] = sqrtf(v[2]);
+}
+
+inline void vec3_min(const vec3_t v1, const vec3_t v2, vec3_t out)
+{
+    out[0] = fminf(v1[0], v2[0]);
+    out[1] = fminf(v1[1], v2[1]);
+    out[2] = fminf(v1[2], v2[2]);
+}
+
+inline void vec3_max(const vec3_t v1, const vec3_t v2, vec3_t out)
+{
+    out[0] = fmaxf(v1[0], v2[0]);
+    out[1] = fmaxf(v1[1], v2[1]);
+    out[2] = fmaxf(v1[2], v2[2]);
+}
+
+inline void vec3_reciprocal(const vec3_t v, vec3_t out)
+{
+    out[0] = 1.0f / v[0];
+    out[1] = 1.0f / v[1];
+    out[2] = 1.0f / v[2];
 }
 
 inline void vec3_reflect(const vec3_t v, const vec3_t n, vec3_t out)
