@@ -13,6 +13,8 @@
 #define unlikely(x) __builtin_expect(!!(x), 0)
 #define likely(x) __builtin_expect(!!(x), 1)
 
+#define BACKFACE_CULL
+
 typedef float vec3_t[3];
 
 #endif

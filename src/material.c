@@ -2,7 +2,9 @@
 
 #include <assert.h>
 #include "ray.h"
+#include "texture.h"
 
+// Honestly no clue what this does, but thanks "Ray Tracing in One Weekend"
 static float reflectance(float cos_theta, float refraction_index)
 {
     float r0 = (1.0f - refraction_index) / (1.0f + refraction_index);
@@ -21,7 +23,7 @@ static bool material_lambertian_scatter(const ray_t* ray, const ray_hit_t* hit, 
     }
     vec3_normalize(out_ray->dir, out_ray->dir);
     vec3_copy(hit->position, out_ray->begin);
-    vec3_copy(hit->material->underlying.lambertian.albedo, out_attenuation);
+    texture_sample(hit->material->underlying.lambertian.tex, 0, 0, hit->position, out_attenuation);
     return true;
 }
 
@@ -64,14 +66,36 @@ static bool material_point_light_emit(const material_t* material, vec3_t out_col
     return true;
 }
 
-material_t* material_lambertian_new(const vec3_t albedo)
+static void material_destroy(material_t* mat)
+{
+    switch(mat->type)
+    {
+        case MATERIAL_LAMBERTIAN:
+            texture_release(mat->underlying.lambertian.tex);
+            break;
+        default:
+            ;
+    }
+    free(mat);
+}
+
+material_t* material_lambertian_new(texture_t* tex)
 {
     material_t* ret = (material_t*) malloc(sizeof(material_t));
     ret->type = MATERIAL_LAMBERTIAN;
     ret->ref_count = 1;
-    vec3_copy(albedo, ret->underlying.lambertian.albedo);
+    ret->underlying.lambertian.tex = texture_acquire(tex);
     return ret;
 }
+
+material_t* material_lambertian_solid_new(const vec3_t albedo)
+{
+    material_t* ret = (material_t*) malloc(sizeof(material_t));
+    ret->type = MATERIAL_LAMBERTIAN;
+    ret->ref_count = 1;
+    ret->underlying.lambertian.tex = texture_solid_new(albedo);
+    return ret;
+}   
 
 material_t* material_metal_new(const vec3_t albedo, float fuzz)
 {
@@ -106,7 +130,7 @@ void material_release(material_t* mat)
 {
     if (--mat->ref_count == 0)
     {
-        free(mat);
+        material_destroy(mat);
     }
 }
 

@@ -13,7 +13,9 @@
 #define NUM_THREADS 8
 
 static const vec3_t WHITE_COLOR = {1.0f, 1.0f, 1.0f};
-static const vec3_t FILL_COLOR = {0.5f, 0.7f, 1.0f};
+//static const vec3_t FILL_COLOR = {0.5f, 0.7f, 1.0f};
+static const vec3_t FILL_COLOR = {1.0f, 0.3f, 0.3f};
+//static const vec3_t FILL_COLOR = {0.0f, 0.0f, 0.0f};
 
 static void linear_to_gamma(vec3_t color)
 {
@@ -50,16 +52,16 @@ static void render_pixel(const struct scene* scene, const ray_t* ray, vec3_t pix
     }
     else
     {
-        // float a = (ray->dir[1] + 1.0f) / 2.0f;
+        float a = (ray->dir[1] + 1.0f) / 2.0f;
 
-        // vec3_copy(FILL_COLOR, pixel);
-        // vec3_mult(pixel, a, pixel);
+        vec3_copy(FILL_COLOR, pixel);
+        vec3_mult(pixel, a, pixel);
 
-        // vec3_t scratch;
-        // vec3_mult(WHITE_COLOR, 1.0f - a, scratch);
+        vec3_t scratch;
+        vec3_mult(WHITE_COLOR, 1.0f - a, scratch);
 
-        // vec3_add(pixel, scratch, pixel);
-        vec3_zero(pixel);
+        vec3_add(pixel, scratch, pixel);
+        //vec3_copy(FILL_COLOR, pixel);
     }
 }
 

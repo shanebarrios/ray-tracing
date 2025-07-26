@@ -5,6 +5,10 @@
 #include "common.h"
 
 #define MAX_OBJECTS 16384
+#define MAX_NODES MAX_OBJECTS * 2
+#if MAX_OBJECTS > 64
+    #define USE_BVH
+#endif
 
 struct ray;
 struct ray_hit;
@@ -15,7 +19,9 @@ typedef struct material material_t;
 
 enum scene_object_type
 {
-    OBJECT_SPHERE
+    OBJECT_SPHERE,
+    OBJECT_QUAD,
+    OBJECT_TRIANGLE
 };
 
 typedef struct sphere
@@ -23,6 +29,22 @@ typedef struct sphere
     vec3_t center;
     float radius;
 } sphere_t;
+
+typedef struct quad
+{
+    vec3_t origin;
+    vec3_t u;
+    vec3_t v;
+    vec3_t normal;
+    vec3_t w;
+} quad_t;
+
+typedef struct triangle
+{
+    vec3_t v0;
+    vec3_t v1;
+    vec3_t v2;
+} triangle_t;
 
 typedef struct aabb
 {
@@ -35,8 +57,11 @@ typedef struct scene_object
     union
     {
         sphere_t sphere;
+        quad_t quad;
     } underlying;
+#ifdef USE_BVH
     aabb_t aabb;
+#endif
     material_t* material;
     enum scene_object_type type;
 } scene_object_t;
@@ -67,15 +92,19 @@ typedef struct bvh_node
 typedef struct scene
 {
     scene_object_t objects[MAX_OBJECTS];
-    bvh_node_t bvh_nodes[2 * MAX_OBJECTS];
-    size_t num_objects;
+#ifdef USE_BVH
+    bvh_node_t bvh_nodes[MAX_NODES];
     size_t num_nodes;
+#endif
+    size_t num_objects;
     camera_t camera;
 } scene_t;
 
 void scene_default_init(scene_t* self);
 
 void scene_random_init(scene_t* self);
+
+void scene_cornell_box_init(scene_t* self);
 
 void scene_destroy(scene_t* self);
 

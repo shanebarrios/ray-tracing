@@ -6,6 +6,7 @@
 #include "utils.h"
 #include "scene.h"
 #include "renderer.h"
+#include "vector.h"
 
 #define TIME(fmt, ...) \
 clock_gettime(CLOCK_MONOTONIC, &begin); \
@@ -14,17 +15,15 @@ clock_gettime(CLOCK_MONOTONIC, &end); \
 elapsed = (double)(end.tv_sec - begin.tv_sec) + (double)(end.tv_nsec - begin.tv_nsec) / 1e9; \
 printf(fmt, elapsed) \
 
-
 int main()
 {
     struct timespec begin, end;
     double elapsed;
     pcg32_srandom(80, time(NULL));
-    //srand(time(NULL));
 
     scene_t scene;
     TIME("Scene initialized in %f seconds\n", {
-        scene_random_init(&scene);
+        scene_cornell_box_init(&scene);
     });
 
     vec3_t* pixels = malloc(PIXEL_WIDTH * PIXEL_HEIGHT * sizeof(vec3_t));

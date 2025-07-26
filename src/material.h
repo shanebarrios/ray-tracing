@@ -5,8 +5,10 @@
 
 struct ray;
 struct ray_hit;
+struct texture;
 typedef struct ray ray_t;
 typedef struct ray_hit ray_hit_t;
+typedef struct texture texture_t;
 
 enum material_type
 {
@@ -19,7 +21,7 @@ enum material_type
 
 struct lambertian
 {
-    vec3_t albedo;
+    texture_t* tex;
 };
 
 struct metal
@@ -51,7 +53,9 @@ typedef struct material
     int ref_count;
 } material_t;
 
-material_t* material_lambertian_new(const vec3_t albedo);
+material_t* material_lambertian_new(texture_t* tex);
+
+material_t* material_lambertian_solid_new(const vec3_t albedo);
 
 material_t* material_metal_new(const vec3_t albedo, float fuzz);
 

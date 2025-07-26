@@ -20,27 +20,27 @@ enum axis
     AXIS_Z 
 };
 
-inline bool interval_overlaps(float u1, float u2, float v1, float v2)
+static inline bool interval_overlaps(float u1, float u2, float v1, float v2)
 {
     return fmaxf(u1, v1) <= fminf(u2, v2);
 }
 
-inline float rand_unit_float()
+static inline float rand_unit_float()
 {
     return (float) pcg32_random() / (float) UINT32_MAX;
 }
 
-inline float rand_unit_float_signed()
+static inline float rand_unit_float_signed()
 {
     return (float) pcg32_random() / (float) UINT32_MAX * 2.0f - 1.0f;
 }
 
-inline float rand_float_in_range(float lower, float upper)
+static inline float rand_float_in_range(float lower, float upper)
 {
     return (float) pcg32_random() / (float) UINT32_MAX * (upper - lower) + lower;
 }
 
-inline int rand_int_in_range(int lower, int upper)
+static inline int rand_int_in_range(int lower, int upper)
 {
     return lower + pcg32_random() % (upper - lower + 1);
 }

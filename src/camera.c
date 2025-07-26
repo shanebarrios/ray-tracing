@@ -53,17 +53,14 @@ void camera_view_to_world(const camera_t* self, const vec3_t v, vec3_t out)
 void camera_random_in_defocus_disk_world_space(const camera_t* self, vec3_t out)
 {
     vec3_t unit_in_disk;
-    float x, y;
-    while (true)
-    {
-        x = rand_unit_float_signed();
-        y = rand_unit_float_signed();
-        if (x * x + y * y < 1.0f) break;
-    }
+    const float theta = rand_float_in_range(0, 2 * PI);
+    const float r = self->defocus_radius * sqrtf(rand_unit_float());
+    const float x = r * cosf(theta);
+    const float y = r * sinf(theta);
     vec3_t right;
-    vec3_mult(self->right, x * self->defocus_radius, right);
+    vec3_mult(self->right, x, right);
     vec3_t up;
-    vec3_mult(self->up, y * self->defocus_radius, up);
+    vec3_mult(self->up, y, up);
     vec3_add(right, up, out);
     vec3_add(out, self->position, out);
 }
